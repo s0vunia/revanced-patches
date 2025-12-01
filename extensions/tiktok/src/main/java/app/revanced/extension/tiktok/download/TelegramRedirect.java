@@ -1,9 +1,11 @@
 package app.revanced.extension.tiktok.download;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.widget.Toast;
+
+import java.lang.reflect.Method;
 
 import app.revanced.extension.tiktok.settings.Settings;
 
@@ -12,6 +14,24 @@ public class TelegramRedirect {
 
     private static String currentVideoId = null;
     private static String currentVideoUrl = null;
+    private static Application applicationContext = null;
+
+    /**
+     * Get application context using reflection.
+     */
+    private static Context getAppContext() {
+        if (applicationContext != null) {
+            return applicationContext;
+        }
+        try {
+            Class<?> activityThread = Class.forName("android.app.ActivityThread");
+            Method currentApplication = activityThread.getMethod("currentApplication");
+            applicationContext = (Application) currentApplication.invoke(null);
+            return applicationContext;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     /**
      * Check if Telegram redirect is enabled.
@@ -41,6 +61,9 @@ public class TelegramRedirect {
      * Open Telegram bot with video info.
      */
     public static void openTelegramBot(Context context) {
+        if (context == null) {
+            context = getAppContext();
+        }
         if (context == null) return;
 
         try {
@@ -67,10 +90,8 @@ public class TelegramRedirect {
                 context.startActivity(intent);
             }
 
-            Toast.makeText(context, "Opening Telegram...", Toast.LENGTH_SHORT).show();
-
         } catch (Exception e) {
-            Toast.makeText(context, "Failed to open Telegram", Toast.LENGTH_SHORT).show();
+            // Silently fail
         }
     }
 
@@ -123,5 +144,18 @@ public class TelegramRedirect {
     public static void clearVideoInfo() {
         currentVideoId = null;
         currentVideoUrl = null;
+    }
+
+    /**
+     * Called early in download flow (from ACLCommonShare.getCode).
+     * Returns -1 to block download if redirected, 0 to allow normal download.
+     */
+    public static int onDownloadCheck() {
+        if (!isRedirectEnabled()) {
+            return 0; // Allow normal download
+        }
+
+        openTelegramBot(null); // Will get context via reflection
+        return -1; // Block download
     }
 }

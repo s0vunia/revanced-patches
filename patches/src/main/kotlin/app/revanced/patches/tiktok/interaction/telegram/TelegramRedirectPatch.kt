@@ -25,17 +25,15 @@ val telegramRedirectPatch = bytecodePatch(
     )
 
     execute {
-        // Hook into the download URI creation method
-        // This method is called when a download is initiated
-        // p0 = Context, p1 = path string
-        downloadUriTelegramFingerprint.method.addInstructionsWithLabels(
+        // Hook into ACLCommonShare.getCode() - called BEFORE download UI shows
+        // This intercepts the download permission check early
+        aclCommonShareTelegramFingerprint.method.addInstructionsWithLabels(
             0,
             """
-                invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->onDownloadClick(Landroid/content/Context;)Z
+                invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->onDownloadCheck()I
                 move-result v0
                 if-eqz v0, :proceed_download
-                const/4 v0, 0x0
-                return-object v0
+                return v0
                 :proceed_download
                 nop
             """,

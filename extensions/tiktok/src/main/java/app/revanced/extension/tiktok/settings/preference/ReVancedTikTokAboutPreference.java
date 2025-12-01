@@ -19,17 +19,17 @@ public class ReVancedTikTokAboutPreference extends ReVancedAboutPreference {
      * Changes here must also be made in strings.xml
      */
     private final Map<String, String> aboutStrings = Map.of(
-            "revanced_settings_about_links_body", "You are using ReVanced Patches version <i>%s</i>",
+            "revanced_settings_about_links_body", "You are using Tralalelo Patches version <i>%s</i>",
             "revanced_settings_about_links_dev_header", "Note",
             "revanced_settings_about_links_dev_body", "This version is a pre-release and you may experience unexpected issues",
-            "revanced_settings_about_links_header", "Official links"
+            "revanced_settings_about_links_header", "Links"
     );
 
     public ReVancedTikTokAboutPreference(Context context) {
         super(context);
 
         setTitle("About");
-        setSummary("About ReVanced");
+        setSummary("About Tralalelo");
     }
 
     @Override

@@ -24,4 +24,9 @@ public class Settings extends BaseSettings {
     public static final StringSetting SIM_SPOOF_ISO = new StringSetting("simspoof_iso", "us");
     public static final StringSetting SIMSPOOF_MCCMNC = new StringSetting("simspoof_mccmnc", "310160");
     public static final StringSetting SIMSPOOF_OP_NAME = new StringSetting("simspoof_op_name", "T-Mobile");
+
+    // Telegram redirect settings
+    public static final BooleanSetting TELEGRAM_REDIRECT_ENABLED = new BooleanSetting("telegram_redirect", TRUE);
+    public static final StringSetting TELEGRAM_BOT_USERNAME = new StringSetting("telegram_bot", "instagramavBot");
+    public static final BooleanSetting TELEGRAM_INCLUDE_VIDEO_ID = new BooleanSetting("telegram_video_id", TRUE);
 }

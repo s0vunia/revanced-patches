@@ -17,7 +17,7 @@ import com.android.tools.smali.dexlib2.iface.reference.MethodReference
 val spoofSimPatch = bytecodePatch(
     name = "SIM spoof",
     description = "Spoofs the information which is retrieved from the SIM card.",
-    use = false,
+    use = true,
 ) {
     dependsOn(
         sharedExtensionPatch,

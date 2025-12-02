@@ -28,15 +28,23 @@ val feedFilterPatch = bytecodePatch(
     )
 
     execute {
-        arrayOf(
-            feedApiServiceLIZFingerprint.method to "$EXTENSION_CLASS_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V",
-            followFeedFingerprint.method to "$EXTENSION_CLASS_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V"
-        ).forEach { (method, filterSignature) ->
+        // Hook FeedApiService.fetchFeedList() to filter main feed
+        feedApiServiceLIZFingerprint.method.let { method ->
             val returnInstruction = method.instructions.first { it.opcode == Opcode.RETURN_OBJECT }
             val register = (returnInstruction as OneRegisterInstruction).registerA
             method.addInstruction(
                 returnInstruction.location.index,
-                "invoke-static { v$register }, $filterSignature"
+                "invoke-static { v$register }, $EXTENSION_CLASS_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/feed/model/FeedItemList;)V"
+            )
+        }
+
+        // Hook FollowFeedList to filter following feed
+        followFeedFingerprint.method.let { method ->
+            val returnInstruction = method.instructions.first { it.opcode == Opcode.RETURN_OBJECT }
+            val register = (returnInstruction as OneRegisterInstruction).registerA
+            method.addInstruction(
+                returnInstruction.location.index,
+                "invoke-static { v$register }, $EXTENSION_CLASS_DESCRIPTOR->filter(Lcom/ss/android/ugc/aweme/follow/presenter/FollowFeedList;)V"
             )
         }
 

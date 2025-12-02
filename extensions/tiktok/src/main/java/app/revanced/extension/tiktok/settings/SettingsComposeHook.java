@@ -69,6 +69,14 @@ public class SettingsComposeHook {
             if (composeView.getParent() != null) {
                 ((ViewGroup) composeView.getParent()).removeView(composeView);
             }
+
+            // Set ComposeView to take remaining space with weight
+            LinearLayout.LayoutParams composeParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,  // height 0 because we use weight
+                1.0f  // weight = 1 to fill remaining space
+            );
+            composeView.setLayoutParams(composeParams);
             container.addView(composeView);
 
             Logger.printDebug(() -> "Successfully wrapped settings view with Tralalelo button");

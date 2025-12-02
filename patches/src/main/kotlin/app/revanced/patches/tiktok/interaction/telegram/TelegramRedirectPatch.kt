@@ -4,7 +4,7 @@ import app.revanced.patcher.extensions.InstructionExtensions.addInstruction
 import app.revanced.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.tiktok.misc.extension.sharedExtensionPatch
-import app.revanced.patches.tiktok.misc.settings.settingsPatch
+import app.revanced.patches.tiktok.misc.settings.settingsComposePatch
 import app.revanced.patches.tiktok.misc.settings.settingsStatusLoadFingerprint
 
 private const val EXTENSION_CLASS_DESCRIPTOR = "Lapp/revanced/extension/tiktok/download/TelegramRedirect;"
@@ -16,12 +16,12 @@ val telegramRedirectPatch = bytecodePatch(
 ) {
     dependsOn(
         sharedExtensionPatch,
-        settingsPatch,
+        settingsComposePatch,
     )
 
     compatibleWith(
-        "com.ss.android.ugc.trill"("36.5.4"),
-        "com.zhiliaoapp.musically"("36.5.4"),
+        "com.ss.android.ugc.trill",
+        "com.zhiliaoapp.musically",
     )
 
     execute {

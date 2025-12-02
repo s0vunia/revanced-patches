@@ -26,64 +26,55 @@ import app.revanced.extension.tiktok.settings.preference.TikTokPreferenceFragmen
 public class SettingsComposeHook {
 
     /**
-     * Wraps the settings ComposeView and adds our Tralalelo settings button at the top.
+     * Called from onViewCreated to inject the Tralalelo settings button into the view hierarchy.
      *
-     * @param composeView The original ComposeView from SettingsComposeVersionFragment
-     * @return A LinearLayout containing our button + the original ComposeView
+     * @param view The root view from onViewCreated (the ComposeView)
      */
-    public static View wrapSettingsView(View composeView) {
+    public static void onViewCreated(View view) {
         try {
-            Context context = composeView.getContext();
+            if (view == null) {
+                Logger.printDebug(() -> "onViewCreated: view is null");
+                return;
+            }
 
-            // Create container LinearLayout
-            LinearLayout container = new LinearLayout(context);
-            container.setOrientation(LinearLayout.VERTICAL);
-            container.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            ));
+            Context context = view.getContext();
+            ViewGroup parent = (ViewGroup) view.getParent();
+
+            if (parent == null) {
+                Logger.printDebug(() -> "onViewCreated: parent is null");
+                return;
+            }
+
+            Logger.printDebug(() -> "onViewCreated: injecting Tralalelo button, parent=" + parent.getClass().getName());
 
             // Create Tralalelo settings button
             TextView settingsButton = new TextView(context);
-            settingsButton.setText("Tralalelo Settings");
+            settingsButton.setText("⚙ Tralalelo Settings");
             settingsButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
             settingsButton.setTypeface(null, Typeface.BOLD);
             settingsButton.setTextColor(Color.WHITE);
             settingsButton.setBackgroundColor(Color.parseColor("#FE2C55")); // TikTok red
             settingsButton.setGravity(Gravity.CENTER);
-            settingsButton.setPadding(48, 36, 48, 36);
+            settingsButton.setPadding(48, 48, 48, 48);
 
-            LinearLayout.LayoutParams buttonParams = new LinearLayout.LayoutParams(
+            // Use FrameLayout.LayoutParams to position at top
+            FrameLayout.LayoutParams buttonParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             );
-            buttonParams.setMargins(24, 24, 24, 12);
+            buttonParams.setMargins(32, 32, 32, 0);
+            buttonParams.gravity = Gravity.TOP;
             settingsButton.setLayoutParams(buttonParams);
+            settingsButton.setElevation(10f);  // Make sure it's on top
 
             settingsButton.setOnClickListener(v -> openTralaSettings(context));
 
-            // Add button first, then compose view
-            container.addView(settingsButton);
+            // Add button to parent (usually a FrameLayout)
+            parent.addView(settingsButton);
 
-            // Remove composeView from its parent if it has one
-            if (composeView.getParent() != null) {
-                ((ViewGroup) composeView.getParent()).removeView(composeView);
-            }
-
-            // Set ComposeView to take remaining space with weight
-            LinearLayout.LayoutParams composeParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,  // height 0 because we use weight
-                1.0f  // weight = 1 to fill remaining space
-            );
-            composeView.setLayoutParams(composeParams);
-            container.addView(composeView);
-
-            Logger.printDebug(() -> "Successfully wrapped settings view with Tralalelo button");
-            return container;
+            Logger.printDebug(() -> "Successfully added Tralalelo button to settings");
         } catch (Exception e) {
-            Logger.printException(() -> "Failed to wrap settings view", e);
-            return composeView; // Return original if wrapping fails
+            Logger.printException(() -> "Failed to inject settings button", e);
         }
     }
 

@@ -16,3 +16,17 @@ internal val settingsComposeOnCreateViewFingerprint = fingerprint {
             method.name == "onCreateView"
     }
 }
+
+/**
+ * Fingerprint for SettingsComposeVersionFragment.onViewCreated()
+ * Called after the view is attached to the fragment
+ */
+internal val settingsComposeOnViewCreatedFingerprint = fingerprint {
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
+    returns("V")
+    parameters("Landroid/view/View;", "Landroid/os/Bundle;")
+    custom { method, classDef ->
+        classDef.type.endsWith("/SettingsComposeVersionFragment;") &&
+            method.name == "onViewCreated"
+    }
+}

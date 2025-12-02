@@ -7,7 +7,6 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.patches.tiktok.misc.extension.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
@@ -29,24 +28,14 @@ val settingsComposePatch = bytecodePatch(
     )
 
     execute {
-        // Hook SettingsComposeVersionFragment.onCreateView()
-        // This method returns a ComposeView that we wrap with our settings button
-        settingsComposeOnCreateViewFingerprint.method.apply {
-            val instructions = implementation!!.instructions
-
-            // Find the return instruction (last instruction that returns a view)
-            val returnIndex = instructions.indexOfLast { it.opcode == Opcode.RETURN_OBJECT }
-            val viewRegister = getInstruction<OneRegisterInstruction>(returnIndex).registerA
-
-            // Before return, wrap the view with our settings button
-            addInstructions(
-                returnIndex,
-                """
-                    invoke-static {v$viewRegister}, $EXTENSION_CLASS_DESCRIPTOR->wrapSettingsView(Landroid/view/View;)Landroid/view/View;
-                    move-result-object v$viewRegister
-                """,
-            )
-        }
+        // Hook SettingsComposeVersionFragment.onViewCreated()
+        // This is called after the view is attached, so we can modify the view hierarchy
+        settingsComposeOnViewCreatedFingerprint.method.addInstructions(
+            0,
+            """
+                invoke-static {p1}, $EXTENSION_CLASS_DESCRIPTOR->onViewCreated(Landroid/view/View;)V
+            """,
+        )
 
         // Hook AdPersonalizationActivity.onCreate() to show our settings when opened with revanced=true
         adPersonalizationActivityOnCreateFingerprint.method.apply {

@@ -11,7 +11,7 @@ import app.revanced.extension.tiktok.settings.preference.TogglePreference;
 public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
     public SimSpoofPreferenceCategory(Context context, PreferenceScreen screen) {
         super(context, screen);
-        setTitle("Bypass regional restriction");
+        setTitle("Обход региональных ограничений");
     }
 
 
@@ -24,23 +24,23 @@ public class SimSpoofPreferenceCategory extends ConditionalPreferenceCategory {
     public void addPreferences(Context context) {
         addPreference(new TogglePreference(
                 context,
-                "Fake sim card info",
-                "Bypass regional restriction by fake sim card information.",
+                "Подмена SIM-карты",
+                "Обход региональных ограничений через подмену данных SIM.",
                 Settings.SIM_SPOOF
         ));
         addPreference(new InputTextPreference(
                 context,
-                "Country ISO", "us, uk, jp, ...",
+                "Код страны ISO", "us, uk, jp, ...",
                 Settings.SIM_SPOOF_ISO
         ));
         addPreference(new InputTextPreference(
                 context,
-                "Operator mcc+mnc", "mcc+mnc",
+                "MCC+MNC оператора", "mcc+mnc",
                 Settings.SIMSPOOF_MCCMNC
         ));
         addPreference(new InputTextPreference(
                 context,
-                "Operator name", "Name of the operator.",
+                "Имя оператора", "Название оператора связи.",
                 Settings.SIMSPOOF_OP_NAME
         ));
     }

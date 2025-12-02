@@ -11,7 +11,7 @@ import app.revanced.extension.tiktok.settings.preference.TogglePreference;
 public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory {
     public FeedFilterPreferenceCategory(Context context, PreferenceScreen screen) {
         super(context, screen);
-        setTitle("Feed filter");
+        setTitle("Фильтр ленты");
     }
 
     @Override
@@ -23,37 +23,37 @@ public class FeedFilterPreferenceCategory extends ConditionalPreferenceCategory 
     public void addPreferences(Context context) {
         addPreference(new TogglePreference(
                 context,
-                "Remove feed ads", "Remove ads from feed.",
+                "Убрать рекламу", "Удалить рекламу из ленты.",
                 Settings.REMOVE_ADS
         ));
         addPreference(new TogglePreference(
                 context,
-                "Hide TikTok Shop", "Hide TikTok shop from feed.",
+                "Скрыть TikTok Shop", "Скрыть магазин TikTok из ленты.",
                 Settings.HIDE_SHOP
         ));
         addPreference(new TogglePreference(
                 context,
-                "Hide livestreams", "Hide livestreams from feed.",
+                "Скрыть трансляции", "Скрыть прямые трансляции из ленты.",
                 Settings.HIDE_LIVE
         ));
         addPreference(new TogglePreference(
                 context,
-                "Hide story", "Hide story from feed.",
+                "Скрыть истории", "Скрыть истории из ленты.",
                 Settings.HIDE_STORY
         ));
         addPreference(new TogglePreference(
                 context,
-                "Hide image video", "Hide image video from feed.",
+                "Скрыть фото-видео", "Скрыть видео из фото из ленты.",
                 Settings.HIDE_IMAGE
         ));
         addPreference(new RangeValuePreference(
                 context,
-                "Min/Max views", "The minimum or maximum views of a video to show.",
+                "Мин/Макс просмотры", "Минимальное или максимальное количество просмотров видео.",
                 Settings.MIN_MAX_VIEWS
         ));
         addPreference(new RangeValuePreference(
                 context,
-                "Min/Max likes", "The minimum or maximum likes of a video to show.",
+                "Мин/Макс лайки", "Минимальное или максимальное количество лайков видео.",
                 Settings.MIN_MAX_LIKES
         ));
     }

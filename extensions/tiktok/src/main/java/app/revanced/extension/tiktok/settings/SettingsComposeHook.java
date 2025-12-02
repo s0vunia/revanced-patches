@@ -49,7 +49,7 @@ public class SettingsComposeHook {
 
             // Create Tralalelo settings button
             TextView settingsButton = new TextView(context);
-            settingsButton.setText("⚙ Tralalelo Settings");
+            settingsButton.setText("⚙ Tralalelo Настройки");
             settingsButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
             settingsButton.setTypeface(null, Typeface.BOLD);
             settingsButton.setTextColor(Color.WHITE);

@@ -4,31 +4,21 @@ import app.revanced.patcher.fingerprint
 import com.android.tools.smali.dexlib2.AccessFlags
 
 /**
- * Fingerprint for ACLCommonShare.getCode() method.
- * This method is called EARLY to check download permissions - before download UI shows.
+ * Fingerprint for the download URI creation method.
+ * This method creates the file URI where the video will be saved.
+ * Hooking here allows us to intercept the actual download operation.
  */
-internal val aclCommonShareTelegramFingerprint = fingerprint {
-    accessFlags(AccessFlags.PUBLIC, AccessFlags.FINAL)
-    returns("I")
-    custom { method, classDef ->
-        classDef.endsWith("/ACLCommonShare;") &&
-                method.name == "getCode"
-    }
-}
-
-/**
- * Fingerprint to hook share panel initialization where Aweme is available.
- * Hooks into SharePanelHelper or similar to capture current video info.
- */
-internal val sharePanelAwemeFingerprint = fingerprint {
-    accessFlags(AccessFlags.PUBLIC)
-    returns("V")
+internal val downloadUriTelegramFingerprint = fingerprint {
+    accessFlags(AccessFlags.PUBLIC, AccessFlags.STATIC)
+    returns("Landroid/net/Uri;")
     parameters(
-        "Lcom/ss/android/ugc/aweme/feed/model/Aweme;",
+        "Landroid/content/Context;",
+        "Ljava/lang/String;"
     )
-    custom { method, classDef ->
-        // Look for methods that take Aweme as first param and are related to share/download
-        classDef.type.contains("Share") || classDef.type.contains("Download") ||
-                classDef.type.contains("Panel")
-    }
+    strings(
+        "/",
+        "/Camera",
+        "/Camera/",
+        "video/mp4"
+    )
 }

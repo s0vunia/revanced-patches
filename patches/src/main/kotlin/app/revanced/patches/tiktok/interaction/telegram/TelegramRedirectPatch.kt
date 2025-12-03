@@ -25,19 +25,21 @@ val telegramRedirectPatch = bytecodePatch(
     )
 
     execute {
-        // Hook into ACLCommonShare.getCode() - called BEFORE download UI shows
-        // This intercepts the download permission check early
-        // p0 = this (ACLCommonShare object which contains aweme reference)
-        aclCommonShareTelegramFingerprint.method.addInstructionsWithLabels(
+        // Hook into the download URI creation method
+        // This is called when actually creating the file to download to
+        // p0 = Context, p1 = filename (String)
+        // Returns Uri - we return null to block download and redirect to Telegram
+        downloadUriTelegramFingerprint.method.addInstructionsWithLabels(
             0,
             """
-                # Try to capture aweme info from ACLCommonShare (p0 = this)
-                invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->captureAwemeFromShare(Ljava/lang/Object;)V
-
-                invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->onDownloadCheck()I
-                move-result v0
+                # Check if redirect is enabled, if so open Telegram and return null
+                invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->onDownloadUri(Landroid/content/Context;)Landroid/net/Uri;
+                move-result-object v0
+                # If result is non-null sentinel, we handled it - return null to block download
+                # If result is null, proceed with normal download
                 if-eqz v0, :proceed_download
-                return v0
+                const/4 v0, 0x0
+                return-object v0
                 :proceed_download
                 nop
             """,

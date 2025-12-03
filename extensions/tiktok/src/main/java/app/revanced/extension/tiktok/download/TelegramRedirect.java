@@ -425,4 +425,23 @@ public class TelegramRedirect {
         openTelegramBot(null); // Will get context via reflection
         return -1; // Block download
     }
+
+    // Sentinel URI to signal that we handled the download
+    private static final Uri SENTINEL_URI = Uri.parse("tiktok://handled");
+
+    /**
+     * Called when download URI is being created.
+     * This is the actual download execution point.
+     * Returns non-null sentinel to block download (caller will return null),
+     * returns null to proceed with normal download.
+     */
+    public static Uri onDownloadUri(Context context) {
+        if (!isRedirectEnabled()) {
+            return null; // Proceed with normal download
+        }
+
+        // Open Telegram and return sentinel to block download
+        openTelegramBot(context);
+        return SENTINEL_URI; // Non-null means we handled it
+    }
 }

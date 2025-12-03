@@ -27,9 +27,13 @@ val telegramRedirectPatch = bytecodePatch(
     execute {
         // Hook into ACLCommonShare.getCode() - called BEFORE download UI shows
         // This intercepts the download permission check early
+        // p0 = this (ACLCommonShare object which contains aweme reference)
         aclCommonShareTelegramFingerprint.method.addInstructionsWithLabels(
             0,
             """
+                # Try to capture aweme info from ACLCommonShare (p0 = this)
+                invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->captureAwemeFromShare(Ljava/lang/Object;)V
+
                 invoke-static {}, $EXTENSION_CLASS_DESCRIPTOR->onDownloadCheck()I
                 move-result v0
                 if-eqz v0, :proceed_download

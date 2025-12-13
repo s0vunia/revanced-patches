@@ -30,7 +30,7 @@ public class Settings extends BaseSettings {
     public static final StringSetting TELEGRAM_BOT_USERNAME = new StringSetting("telegram_bot", "instagramavBot");
     public static final BooleanSetting TELEGRAM_INCLUDE_VIDEO_ID = new BooleanSetting("telegram_video_id", TRUE);
 
-    // Debug settings
-    public static final BooleanSetting SSL_BYPASS_ENABLED = new BooleanSetting("ssl_bypass", FALSE);
-    public static final BooleanSetting EMULATOR_BYPASS_ENABLED = new BooleanSetting("emulator_bypass", FALSE);
+    // Debug settings - enabled by default so app can start on emulator
+    public static final BooleanSetting SSL_BYPASS_ENABLED = new BooleanSetting("ssl_bypass", TRUE);
+    public static final BooleanSetting EMULATOR_BYPASS_ENABLED = new BooleanSetting("emulator_bypass", TRUE);
 }

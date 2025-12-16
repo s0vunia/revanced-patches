@@ -1,61 +1,32 @@
-group = "app.revanced"
-
-patches {
-    about {
-        name = "ReVanced Patches"
-        description = "Patches for ReVanced"
-        source = "git@github.com:revanced/revanced-patches.git"
-        author = "ReVanced"
-        contact = "contact@revanced.app"
-        website = "https://revanced.app"
-        license = "GNU General Public License v3.0"
-    }
+plugins {
+    kotlin("jvm")
 }
 
 dependencies {
-    // Required due to smali, or build fails. Can be removed once smali is bumped.
-    implementation(libs.guava)
-
-    implementation(libs.apksig)
-
-    // Android API stubs defined here.
-    compileOnly(project(":patches:stub"))
-}
-
-tasks {
-    register<JavaExec>("preprocessCrowdinStrings") {
-        description = "Preprocess strings for Crowdin push"
-
-        dependsOn(compileKotlin)
-
-        classpath = sourceSets["main"].runtimeClasspath
-        mainClass.set("app.revanced.util.CrowdinPreprocessorKt")
-
-        args = listOf(
-            "src/main/resources/addresources/values/strings.xml",
-            // Ideally this would use build/tmp/crowdin/strings.xml
-            // But using that does not work with Crowdin pull because
-            // it does not recognize the strings.xml file belongs to this project.
-            "src/main/resources/addresources/values/strings.xml"
-        )
-    }
+    // ReVanced patcher from JitPack
+    implementation("app.revanced:revanced-patcher:21.0.0")
+    implementation("com.android.tools.smali:smali:3.0.3")
 }
 
 kotlin {
-    compilerOptions {
-        freeCompilerArgs = listOf("-Xcontext-receivers")
-    }
+    jvmToolchain(17)
 }
 
-publishing {
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/revanced/revanced-patches")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
-            }
+tasks {
+    jar {
+        archiveBaseName.set("tiktok-patches")
+        
+        manifest {
+            attributes(
+                "Name" to "TikTok ReVanced Patches",
+                "Version" to project.version.toString()
+            )
         }
+        
+        from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) }) {
+            exclude("META-INF/*.RSA", "META-INF/*.SF", "META-INF/*.DSA")
+        }
+        
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 }

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 rootProject.name = "revanced-patches"
 
 pluginManagement {
@@ -30,3 +31,33 @@ settings {
 }
 
 include(":patches:stub")
+=======
+rootProject.name = "tiktok-revanced-patches"
+
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    plugins {
+        id("com.android.library") version "8.2.2"
+        kotlin("jvm") version "1.9.22"
+        kotlin("android") version "1.9.22"
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+        // Local libs folder for revanced-patcher
+        flatDir { dirs("${rootProject.projectDir}/libs") }
+    }
+}
+
+include(":patches")
+include(":extensions")
+>>>>>>> 2172b6f60 (feat: TikTok ReVanced standalone mod implementation)

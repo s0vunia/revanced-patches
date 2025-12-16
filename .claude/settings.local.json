@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c \"dir /s /b C:\\jadx* 2>nul\")",
+      "Bash(cmd /c \"dir /s /b C:\\tools\\*jadx* 2>nul\")",
+      "WebSearch",
+      "Bash(where:*)",
+      "Bash(java:*)",
+      "Bash(cmd /c \"dir /s /b C:\\Users\\s0vunia\\*revanced*.jar 2>nul\")",
+      "Bash(cmd /c \"if exist C:\\Users\\s0vunia\\AppData\\Local\\Android\\Sdk echo FOUND: C:\\Users\\s0vunia\\AppData\\Local\\Android\\Sdk\")",
+      "Bash(grep:*)",
+      "Bash(tree:*)",
+      "Bash(go build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

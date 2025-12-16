@@ -1,105 +1,166 @@
-<p align="center">
-  <picture>
-    <source
-      width="256px"
-      media="(prefers-color-scheme: dark)"
-      srcset="assets/revanced-headline/revanced-headline-vertical-dark.svg"
-    >
-    <img 
-      width="256px"
-      src="assets/revanced-headline/revanced-headline-vertical-light.svg"
-    >
-  </picture>
-  <br>
-  <a href="https://revanced.app/">
-     <picture>
-         <source height="24px" media="(prefers-color-scheme: dark)" srcset="assets/revanced-logo/revanced-logo.svg" />
-         <img height="24px" src="assets/revanced-logo/revanced-logo.svg" />
-     </picture>
-   </a>&nbsp;&nbsp;&nbsp;
-   <a href="https://github.com/ReVanced">
-       <picture>
-           <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://i.ibb.co/dMMmCrW/Git-Hub-Mark.png" />
-           <img height="24px" src="https://i.ibb.co/9wV3HGF/Git-Hub-Mark-Light.png" />
-       </picture>
-   </a>&nbsp;&nbsp;&nbsp;
-   <a href="http://revanced.app/discord">
-       <picture>
-           <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/13122796/178032563-d4e084b7-244e-4358-af50-26bde6dd4996.png" />
-           <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032563-d4e084b7-244e-4358-af50-26bde6dd4996.png" />
-       </picture>
-   </a>&nbsp;&nbsp;&nbsp;
-   <a href="https://reddit.com/r/revancedapp">
-       <picture>
-           <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/13122796/178032351-9d9d5619-8ef7-470a-9eec-2744ece54553.png" />
-           <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032351-9d9d5619-8ef7-470a-9eec-2744ece54553.png" />
-       </picture>
-   </a>&nbsp;&nbsp;&nbsp;
-   <a href="https://t.me/app_revanced">
-      <picture>
-         <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/13122796/178032213-faf25ab8-0bc3-4a94-a730-b524c96df124.png" />
-         <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032213-faf25ab8-0bc3-4a94-a730-b524c96df124.png" />
-      </picture>
-   </a>&nbsp;&nbsp;&nbsp;
-   <a href="https://x.com/revancedapp">
-      <picture>
-         <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/93124920/270180600-7c1b38bf-889b-4d68-bd5e-b9d86f91421a.png">
-         <img height="24px" src="https://user-images.githubusercontent.com/93124920/270108715-d80743fa-b330-4809-b1e6-79fbdc60d09c.png" />
-      </picture>
-   </a>&nbsp;&nbsp;&nbsp;
-   <a href="https://www.youtube.com/@ReVanced">
-      <picture>
-         <source height="24px" media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/13122796/178032714-c51c7492-0666-44ac-99c2-f003a695ab50.png" />
-         <img height="24px" src="https://user-images.githubusercontent.com/13122796/178032714-c51c7492-0666-44ac-99c2-f003a695ab50.png" />
-     </picture>
-   </a>
-   <br>
-   <br>
-   Continuing the legacy of Vanced
-</p>
+# TikTok ReVanced Patches
 
-# 🧩 ReVanced Patches
+Custom ReVanced patches for TikTok that:
+1. **Remove ALL ads** from the feed
+2. **Redirect download** to your Telegram bot
 
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ReVanced/revanced-patches/release.yml)
-![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)
+## Features
 
-This repository contains a collection of ReVanced Patches.
+### Feed Filter Patch
+- Removes all ads from feed
+- Removes promoted/sponsored content
+- Removes live streams (optional)
+- Removes shop/e-commerce content
+- Blocks Pangle/ByteDance ad SDK
 
-## ❓ About
+### Telegram Redirect Patch
+- Intercepts download button clicks
+- Opens your Telegram bot instead of downloading
+- Passes video ID to bot via start parameter
+- Supports custom deep link formats
 
-Patches are small modifications to Android apps that allow you to change the behavior of or add new features,
-block ads, customize the appearance, and much more.
+## Configuration
 
-## 💪 Features
+Edit `extensions/src/main/java/app/revanced/extension/tiktok/settings/Settings.java`:
 
-Some of the features the patches provide are:
+```java
+// Your Telegram bot username (without @)
+public static String TELEGRAM_BOT_USERNAME = "YOUR_BOT_USERNAME";
 
-* 🚫 **Block ads**: Say goodbye to ads
-* ⭐ **Customize your app**: Personalize the appearance of apps with various layouts and themes
-* 🪄 **Add new features**: Extend the functionality of apps with lots of new features
-* ⚙️ **Miscellaneous and general purpose**: Rename packages, enable debugging, disable screen capture restrictions,
-  export activities, etc.
-* ✨ **And much more!**
+// Include video ID in the bot link
+public static boolean INCLUDE_VIDEO_ID = true;
 
-For a complete list of all available patches, visit [revanced.app/patches](https://revanced.app/patches).
+// Enable/disable Telegram redirect
+public static boolean TELEGRAM_REDIRECT_ENABLED = true;
+```
 
-## 🚀 How to get started
+## Building
 
-You can use [ReVanced CLI](https://github.com/ReVanced/revanced-cli) or [ReVanced Manager](https://github.com/ReVanced/revanced-manager) to use ReVanced Patches.
+### Prerequisites
+- JDK 17 or higher
+- Gradle 8.x
 
-## 📚 Everything else
+### Build Steps
 
-### 📙 Contributing
+1. Configure your bot username in `Settings.java`
 
-Thank you for considering contributing to ReVanced Patches. You can find the contribution guidelines [here](CONTRIBUTING.md).
+2. Build the patches JAR:
+```bash
+./gradlew build
+```
 
-### 🛠️ Building
+3. The patches JAR will be at `build/libs/tiktok-revanced-patches-1.0.0.jar`
 
-To build ReVanced Patches, you can follow the [ReVanced documentation](https://github.com/ReVanced/revanced-documentation).
+## Using with ReVanced CLI
 
-## 📜 Licence
+### Method 1: Using ReVanced CLI
 
-ReVanced Patches is licensed under the GPLv3 license. Please see the [license file](LICENSE) for more information.
-[tl;dr](https://www.tldrlegal.com/license/gnu-general-public-license-v3-gpl-3) you may copy, distribute and modify ReVanced Patches as long as you track changes/dates in source files.
-Any modifications to ReVanced Patches must also be made available under the GPL,
-along with build & install instructions.
+```bash
+# Download TikTok APK (version 36.5.4 recommended)
+# Get ReVanced CLI and integrations
+
+java -jar revanced-cli.jar patch \
+    --patch-bundle tiktok-revanced-patches-1.0.0.jar \
+    --include "Feed filter" \
+    --include "Telegram redirect" \
+    input-tiktok.apk
+```
+
+### Method 2: Using ReVanced Manager
+
+1. Copy `tiktok-revanced-patches-1.0.0.jar` to your device
+2. Open ReVanced Manager
+3. Go to Settings → Sources
+4. Add local patch bundle
+5. Select TikTok and apply patches
+
+## Compatible TikTok Versions
+
+- `com.ss.android.ugc.trill` (TikTok Lite): 36.5.4, 37.x, 38.x
+- `com.zhiliaoapp.musically` (TikTok): 36.5.4, 37.x, 38.x
+
+## Telegram Bot Setup
+
+Create a Telegram bot that handles the video ID:
+
+```python
+from telegram import Update
+from telegram.ext import Application, CommandHandler, ContextTypes
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Get video ID from start parameter
+    if context.args:
+        video_id = context.args[0]
+        # video_id format: "VIDEO_ID" or "VIDEO_ID_USERNAME"
+        await update.message.reply_text(f"Processing video: {video_id}")
+        # Download and send video here
+    else:
+        await update.message.reply_text("Welcome! Share a TikTok video to download.")
+
+app = Application.builder().token("YOUR_BOT_TOKEN").build()
+app.add_handler(CommandHandler("start", start))
+app.run_polling()
+```
+
+## How It Works
+
+### Ad Removal
+1. Hooks TikTok's feed list processing
+2. Filters items before display using reflection
+3. Identifies ads by checking type fields and class names
+4. Blocks Pangle ad SDK initialization
+
+### Telegram Redirect
+1. Hooks download button click handler
+2. Extracts current video info (ID, author)
+3. Builds Telegram URL with video ID as start param
+4. Opens Telegram app with deep link
+
+## Troubleshooting
+
+### Fingerprints not found
+TikTok obfuscates code differently per version. If patches don't work:
+1. Use JADX to analyze your TikTok APK
+2. Find the actual method names/signatures
+3. Update fingerprints in `Fingerprints.kt`
+
+### Download still works normally
+1. Check `TELEGRAM_REDIRECT_ENABLED` is true
+2. Verify bot username is correct
+3. Check logs for errors
+
+### Ads still showing
+1. Enable `BLOCK_AD_SDK` in settings
+2. Some ads may use different delivery methods
+3. Check logcat for filter messages
+
+## Project Structure
+
+```
+tiktok-revanced-patches/
+├── patches/src/main/kotlin/
+│   └── app/revanced/patches/tiktok/
+│       ├── feedfilter/
+│       │   ├── Fingerprints.kt      # Method signatures for ad filtering
+│       │   └── FeedFilterPatch.kt   # Ad removal patch
+│       ├── download/
+│       │   ├── Fingerprints.kt      # Method signatures for download
+│       │   └── TelegramRedirectPatch.kt  # Telegram redirect patch
+│       └── misc/
+│           ├── SharedExtensionPatch.kt
+│           └── SettingsPatch.kt
+├── extensions/src/main/java/
+│   └── app/revanced/extension/tiktok/
+│       ├── feedfilter/
+│       │   └── FeedItemsFilter.java  # Ad filtering logic
+│       ├── download/
+│       │   └── TelegramRedirect.java # Telegram redirect logic
+│       └── settings/
+│           └── Settings.java         # Configuration
+├── build.gradle.kts
+└── README.md
+```
+
+## License
+
+GPL-3.0 License

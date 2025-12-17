@@ -2,9 +2,10 @@ package app.revanced.patches.tiktok.nativelib
 
 import app.revanced.patcher.patch.rawResourcePatch
 import app.revanced.patcher.patch.resourcePatch
-import app.revanced.patcher.util.Document
+import app.revanced.util.inputStreamFromBundledResource
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.file.Files
 
 /**
  * Native Library Replacement Patch
@@ -32,20 +33,19 @@ val nativeLibReplacementPatch = rawResourcePatch(
         "com.zhiliaoapp.musically"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
     )
 
-    execute { context ->
+    execute {
         val architectures = listOf("arm64-v8a", "armeabi-v7a")
 
         for (arch in architectures) {
-            // Get the native library from resources
-            val resourcePath = "tiktok/nativelib/$arch/libtigrik.so"
-            val inputStream = this::class.java.classLoader?.getResourceAsStream(resourcePath)
+            // Get the native library from bundled resources
+            val inputStream = inputStreamFromBundledResource("tiktok/nativelib/$arch", "libtigrik.so")
 
             if (inputStream != null) {
                 // Target path in the APK
-                val targetDir = context["lib/$arch"]
+                val targetDir = get("lib/$arch", true)
                 targetDir.mkdirs()
 
-                val targetFile = targetDir.resolve("libtigrik.so")
+                val targetFile = File(targetDir, "libtigrik.so")
 
                 // Copy the replacement library
                 inputStream.use { input ->
@@ -78,10 +78,10 @@ val disableNativeLibPatch = resourcePatch(
         "com.zhiliaoapp.musically"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
     )
 
-    execute { context ->
+    execute {
         // This patch works by modifying the AndroidManifest to remove
         // the tigrik receiver, effectively disabling cloud control
-        context.document["AndroidManifest.xml"].use { document ->
+        document("AndroidManifest.xml").use { document ->
             val manifest = document.documentElement
 
             // Find and remove KillAppReceiver

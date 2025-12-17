@@ -4,7 +4,7 @@ import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
 import app.revanced.patcher.extensions.InstructionExtensions.replaceInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.tiktok.misc.extension.sharedExtensionPatch
-import app.revanced.patches.tiktok.misc.settings.settingsPatch
+import app.revanced.patches.tiktok.misc.settings.settingsComposePatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.OneRegisterInstruction
 
@@ -33,7 +33,7 @@ val emulatorBypassPatch = bytecodePatch(
     name = "Bypass emulator detection",
     description = "Allows TikTok to run on emulators by spoofing device properties.",
 ) {
-    dependsOn(sharedExtensionPatch, settingsPatch)
+    dependsOn(sharedExtensionPatch, settingsComposePatch)
 
     compatibleWith(
         "com.ss.android.ugc.trill"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),

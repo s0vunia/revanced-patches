@@ -4,7 +4,7 @@ import app.revanced.patcher.extensions.InstructionExtensions.addInstructions
 import app.revanced.patcher.extensions.InstructionExtensions.addInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patches.tiktok.misc.extension.sharedExtensionPatch
-import app.revanced.patches.tiktok.misc.settings.settingsPatch
+import app.revanced.patches.tiktok.misc.settings.settingsComposePatch
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/revanced/extension/tiktok/watermark/WatermarkRemoval;"
@@ -23,7 +23,7 @@ val watermarkRemovalPatch = bytecodePatch(
     name = "Remove watermark",
     description = "Removes TikTok watermarks from videos and images for cleaner downloads.",
 ) {
-    dependsOn(sharedExtensionPatch, settingsPatch)
+    dependsOn(sharedExtensionPatch, settingsComposePatch)
 
     compatibleWith(
         "com.ss.android.ugc.trill"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),

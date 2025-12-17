@@ -10,7 +10,8 @@
       "Bash(cmd /c \"if exist C:\\Users\\s0vunia\\AppData\\Local\\Android\\Sdk echo FOUND: C:\\Users\\s0vunia\\AppData\\Local\\Android\\Sdk\")",
       "Bash(grep:*)",
       "Bash(tree:*)",
-      "Bash(go build:*)"
+      "Bash(go build:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

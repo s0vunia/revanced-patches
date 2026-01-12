@@ -5,7 +5,8 @@ import com.android.tools.smali.dexlib2.AccessFlags
 
 internal val initHook = extensionHook {
     custom { method, classDef ->
-        classDef.type == "Lcom/ss/android/ugc/aweme/main/MainActivity;" &&
+        // MainActivity.onCreate() is native in TikTok 43.x, use AwemeHostApplication instead
+        classDef.type == "Lcom/ss/android/ugc/aweme/app/host/AwemeHostApplication;" &&
                 method.name == "onCreate"
     }
 }

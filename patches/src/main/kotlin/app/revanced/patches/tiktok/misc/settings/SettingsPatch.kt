@@ -9,7 +9,6 @@ import app.revanced.patches.shared.layout.branding.addBrandLicensePatch
 import app.revanced.patches.tiktok.misc.extension.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction22c
-import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
 import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
@@ -79,15 +78,14 @@ val settingsPatch = bytecodePatch(
                 it.opcode == Opcode.INVOKE_SUPER
             } + 1
 
-            val thisRegister = getInstruction<Instruction35c>(initializeSettingsIndex - 1).registerC
-            val usableRegister = implementation!!.registerCount - parameters.size - 2
-
+            // Use p0 (this) for the activity reference and v0 for the result
+            // v0 is always safe to use as a temporary register
             addInstructionsWithLabels(
                 initializeSettingsIndex,
                 """
-                    invoke-static {v$thisRegister}, $initializeSettingsMethodDescriptor
-                    move-result v$usableRegister
-                    if-eqz v$usableRegister, :do_not_open
+                    invoke-static {p0}, $initializeSettingsMethodDescriptor
+                    move-result v0
+                    if-eqz v0, :do_not_open
                     return-void
                 """,
                 ExternalLabel("do_not_open", getInstruction(initializeSettingsIndex)),

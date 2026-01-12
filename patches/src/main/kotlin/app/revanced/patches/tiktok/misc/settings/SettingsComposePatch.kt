@@ -7,7 +7,6 @@ import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.patches.tiktok.misc.extension.sharedExtensionPatch
 import com.android.tools.smali.dexlib2.Opcode
-import com.android.tools.smali.dexlib2.iface.instruction.formats.Instruction35c
 
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/revanced/extension/tiktok/settings/SettingsComposeHook;"
@@ -43,15 +42,14 @@ val settingsComposePatch = bytecodePatch(
                 it.opcode == Opcode.INVOKE_SUPER
             } + 1
 
-            val thisRegister = getInstruction<Instruction35c>(initializeSettingsIndex - 1).registerC
-            val usableRegister = implementation!!.registerCount - parameters.size - 2
-
+            // Use p0 (this) for the activity reference and v0 for the result
+            // v0 is always safe to use as a temporary register
             addInstructionsWithLabels(
                 initializeSettingsIndex,
                 """
-                    invoke-static {v$thisRegister}, $EXTENSION_CLASS_DESCRIPTOR->initializeSettings(Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;)Z
-                    move-result v$usableRegister
-                    if-eqz v$usableRegister, :do_not_open
+                    invoke-static {p0}, $EXTENSION_CLASS_DESCRIPTOR->initializeSettings(Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;)Z
+                    move-result v0
+                    if-eqz v0, :do_not_open
                     return-void
                 """,
                 ExternalLabel("do_not_open", getInstruction(initializeSettingsIndex)),

@@ -31,9 +31,7 @@ val settingsComposePatch = bytecodePatch(
         // This is called after the view is attached, so we can modify the view hierarchy
         settingsComposeOnViewCreatedFingerprint.method.addInstructions(
             0,
-            """
-                invoke-static {p1}, $EXTENSION_CLASS_DESCRIPTOR->onViewCreated(Landroid/view/View;)V
-            """,
+            "invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->onViewCreated(Landroid/view/View;)V",
         )
 
         // Hook AdPersonalizationActivity.onCreate() to show our settings when opened with revanced=true
@@ -47,11 +45,11 @@ val settingsComposePatch = bytecodePatch(
             addInstructionsWithLabels(
                 initializeSettingsIndex,
                 """
-                    invoke-static {p0}, $EXTENSION_CLASS_DESCRIPTOR->initializeSettings(Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;)Z
+                    invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->initializeSettings(Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;)Z
                     move-result v0
                     if-eqz v0, :do_not_open
                     return-void
-                """,
+                """.trimIndent(),
                 ExternalLabel("do_not_open", getInstruction(initializeSettingsIndex)),
             )
         }

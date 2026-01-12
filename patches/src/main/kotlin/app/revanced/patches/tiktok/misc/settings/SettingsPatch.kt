@@ -83,11 +83,11 @@ val settingsPatch = bytecodePatch(
             addInstructionsWithLabels(
                 initializeSettingsIndex,
                 """
-                    invoke-static {p0}, $initializeSettingsMethodDescriptor
+                    invoke-static { p0 }, $initializeSettingsMethodDescriptor
                     move-result v0
                     if-eqz v0, :do_not_open
                     return-void
-                """,
+                """.trimIndent(),
                 ExternalLabel("do_not_open", getInstruction(initializeSettingsIndex)),
             )
         }

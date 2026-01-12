@@ -29,8 +29,8 @@ val nativeLibReplacementPatch = rawResourcePatch(
     description = "Replaces libtigrik.so with TikMod (no cloud control, no kill switch, no remote banners).",
 ) {
     compatibleWith(
-        "com.ss.android.ugc.trill"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
-        "com.zhiliaoapp.musically"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
+        "com.ss.android.ugc.trill",
+        "com.zhiliaoapp.musically",
     )
 
     execute {
@@ -74,8 +74,8 @@ val disableNativeLibPatch = resourcePatch(
     description = "Disables libtigrik.so loading (mod features won't work, but removes cloud control).",
 ) {
     compatibleWith(
-        "com.ss.android.ugc.trill"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
-        "com.zhiliaoapp.musically"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
+        "com.ss.android.ugc.trill",
+        "com.zhiliaoapp.musically",
     )
 
     execute {

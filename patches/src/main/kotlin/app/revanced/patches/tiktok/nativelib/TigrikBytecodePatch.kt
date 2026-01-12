@@ -22,8 +22,8 @@ val tigrikBytecodePatch = bytecodePatch(
     dependsOn(nativeLibReplacementPatch)
 
     compatibleWith(
-        "com.ss.android.ugc.trill"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
-        "com.zhiliaoapp.musically"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
+        "com.ss.android.ugc.trill",
+        "com.zhiliaoapp.musically",
     )
 
     execute {
@@ -121,8 +121,8 @@ val cloudControlRemovalPatch = bytecodePatch(
     dependsOn(tigrikBytecodePatch)
 
     compatibleWith(
-        "com.ss.android.ugc.trill"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
-        "com.zhiliaoapp.musically"("36.5.4", "37.0.0", "37.1.0", "37.2.0", "38.0.0"),
+        "com.ss.android.ugc.trill",
+        "com.zhiliaoapp.musically",
     )
 
     execute {

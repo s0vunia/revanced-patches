@@ -29,9 +29,10 @@ val settingsComposePatch = bytecodePatch(
     execute {
         // Hook SettingsComposeVersionFragment.onViewCreated()
         // This is called after the view is attached, so we can modify the view hierarchy
+        // Use invoke-static/range because p1 may map to v17+ which exceeds invoke-static's v0-v15 limit
         settingsComposeOnViewCreatedFingerprint.method.addInstructions(
             0,
-            "invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->onViewCreated(Landroid/view/View;)V",
+            "invoke-static/range { p1 .. p1 }, $EXTENSION_CLASS_DESCRIPTOR->onViewCreated(Landroid/view/View;)V",
         )
 
         // Hook AdPersonalizationActivity.onCreate() to show our settings when opened with revanced=true
@@ -42,10 +43,11 @@ val settingsComposePatch = bytecodePatch(
 
             // Use p0 (this) for the activity reference and v0 for the result
             // v0 is always safe to use as a temporary register
+            // Use invoke-static/range because p0 may map to v23+ which exceeds invoke-static's v0-v15 limit
             addInstructionsWithLabels(
                 initializeSettingsIndex,
                 """
-                    invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->initializeSettings(Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;)Z
+                    invoke-static/range { p0 .. p0 }, $EXTENSION_CLASS_DESCRIPTOR->initializeSettings(Lcom/bytedance/ies/ugc/aweme/commercialize/compliance/personalization/AdPersonalizationActivity;)Z
                     move-result v0
                     if-eqz v0, :do_not_open
                     return-void

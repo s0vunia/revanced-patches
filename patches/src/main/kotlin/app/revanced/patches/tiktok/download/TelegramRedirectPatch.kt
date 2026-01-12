@@ -45,7 +45,7 @@ val telegramRedirectPatch = bytecodePatch(
                     if-eqz v0, :original_download
 
                     # Get context from the view (p0 is usually View in onClick)
-                    invoke-virtual { p0 }, Landroid/view/View;->getContext()Landroid/content/Context;
+                    invoke-virtual/range { p0 .. p0 }, Landroid/view/View;->getContext()Landroid/content/Context;
                     move-result-object v1
 
                     # Open Telegram bot
@@ -66,7 +66,7 @@ val telegramRedirectPatch = bytecodePatch(
                 0,
                 """
                     # Check if this is the download item being clicked
-                    invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->isDownloadItem(Ljava/lang/Object;)Z
+                    invoke-static/range { p1 .. p1 }, $EXTENSION_CLASS_DESCRIPTOR->isDownloadItem(Ljava/lang/Object;)Z
                     move-result v0
                     if-eqz v0, :not_download
 
@@ -76,7 +76,7 @@ val telegramRedirectPatch = bytecodePatch(
                     if-eqz v0, :not_download
 
                     # Get context
-                    invoke-virtual { p0 }, Landroid/view/View;->getContext()Landroid/content/Context;
+                    invoke-virtual/range { p0 .. p0 }, Landroid/view/View;->getContext()Landroid/content/Context;
                     move-result-object v1
 
                     # Get current video info and open Telegram
@@ -100,7 +100,7 @@ val telegramRedirectPatch = bytecodePatch(
                     if-eqz v0, :do_download
 
                     # Redirect to Telegram with video URL
-                    invoke-static { p0, p1 }, $EXTENSION_CLASS_DESCRIPTOR->redirectToTelegram(Landroid/content/Context;Ljava/lang/String;)V
+                    invoke-static/range { p0 .. p1 }, $EXTENSION_CLASS_DESCRIPTOR->redirectToTelegram(Landroid/content/Context;Ljava/lang/String;)V
                     return-void
 
                     :do_download
@@ -115,7 +115,7 @@ val telegramRedirectPatch = bytecodePatch(
                 0,
                 """
                     # Store current video info when share menu is opened
-                    invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->storeCurrentVideoInfo(Ljava/lang/Object;)V
+                    invoke-static/range { p0 .. p0 }, $EXTENSION_CLASS_DESCRIPTOR->storeCurrentVideoInfo(Ljava/lang/Object;)V
                 """
             )
         }

@@ -38,18 +38,22 @@ val playbackSpeedPatch = bytecodePatch(
 
             // By default, the playback speed will reset to 1.0 at the start of each video.
             // Instead, override it with the desired playback speed.
+            // Note: Use move-object/from16 to handle parameter registers that may exceed v15
             onRenderFirstFrameFingerprint.method.addInstructions(
                 0,
                 """
+                    # Copy p0 to local register since it may be > v15
+                    move-object/from16 v3, p0
+
                     # Video playback location (e.g. home page, following page or search result page) retrieved using getEnterFrom method.
                     const/4 v0, 0x1
-                    invoke-virtual { p0, v0 },  ${getEnterFromFingerprint.originalMethod}
+                    invoke-virtual { v3, v0 },  ${getEnterFromFingerprint.originalMethod}
                     move-result-object v0
-    
+
                     # Model of current video retrieved using getCurrentAweme method.
-                    invoke-virtual { p0 }, Lcom/ss/android/ugc/aweme/feed/panel/BaseListFragmentPanel;->getCurrentAweme()Lcom/ss/android/ugc/aweme/feed/model/Aweme;
+                    invoke-virtual { v3 }, Lcom/ss/android/ugc/aweme/feed/panel/BaseListFragmentPanel;->getCurrentAweme()Lcom/ss/android/ugc/aweme/feed/model/Aweme;
                     move-result-object v1
-    
+
                     # Desired playback speed retrieved using getPlaybackSpeed method.
                     invoke-static { }, Lapp/revanced/extension/tiktok/speed/PlaybackSpeedPatch;->getPlaybackSpeed()F
                     move-result v2

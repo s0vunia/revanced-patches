@@ -33,7 +33,7 @@ val telegramRedirectPatch = bytecodePatch(
             0,
             """
                 # Check if redirect is enabled, if so open Telegram and return null
-                invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->onDownloadUri(Landroid/content/Context;)Landroid/net/Uri;
+                invoke-static/range { p0 .. p0 }, $EXTENSION_CLASS_DESCRIPTOR->onDownloadUri(Landroid/content/Context;)Landroid/net/Uri;
                 move-result-object v0
                 # If result is non-null sentinel, we handled it - return null to block download
                 # If result is null, proceed with normal download

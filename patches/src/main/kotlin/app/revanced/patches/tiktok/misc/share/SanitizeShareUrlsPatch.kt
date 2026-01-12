@@ -66,7 +66,7 @@ val sanitizeShareUrlsPatch = bytecodePatch(
                     move-result v$wrapperRegister
                     if-eqz v$wrapperRegister, :skip_sanitization
 
-                    invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->sanitizeShareUrl(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static/range { p1 .. p1 }, $EXTENSION_CLASS_DESCRIPTOR->sanitizeShareUrl(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object v$urlRegister
 
                     # Wrap sanitized URL and return early to bypass ShareExtService

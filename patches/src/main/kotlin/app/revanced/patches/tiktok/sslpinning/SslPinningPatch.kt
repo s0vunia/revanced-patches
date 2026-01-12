@@ -123,6 +123,7 @@ val sslPinningPatch = bytecodePatch(
         signatureVerificationInterceptorFingerprint.methodOrNull?.apply {
             // Find the config.enable check and make it return false
             // The interceptor checks LLILII.enable field early and returns if false
+            // Note: Use move-object/from16 to handle parameter registers that may exceed v15
             addInstructions(
                 0,
                 """
@@ -130,9 +131,11 @@ val sslPinningPatch = bytecodePatch(
                     move-result v0
                     if-eqz v0, :continue
                     # If bypass enabled, just proceed with the chain without verification
-                    check-cast p1, LX/0Z1Y;
-                    iget-object v1, p1, LX/0Z1Y;->LIZJ:Lcom/bytedance/retrofit2/client/Request;
-                    invoke-virtual {p1, v1}, LX/0Z1Y;->LIZ(Lcom/bytedance/retrofit2/client/Request;)LX/0YZU;
+                    # Copy p1 to local register since it may be > v15
+                    move-object/from16 v2, p1
+                    check-cast v2, LX/0Z1Y;
+                    iget-object v1, v2, LX/0Z1Y;->LIZJ:Lcom/bytedance/retrofit2/client/Request;
+                    invoke-virtual {v2, v1}, LX/0Z1Y;->LIZ(Lcom/bytedance/retrofit2/client/Request;)LX/0YZU;
                     move-result-object v0
                     return-object v0
                     :continue

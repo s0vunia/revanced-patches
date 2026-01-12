@@ -50,11 +50,12 @@ val watermarkRemovalPatch = bytecodePatch(
         }
 
         // Method 2: Hook video download address getter - return no-watermark URL
+        // Use /range because parameter registers may exceed v15
         videoDownloadAddrFingerprint.methodOrNull?.apply {
             addInstructions(
                 0,
                 """
-                    invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->getNoWatermarkDownloadAddr(Ljava/lang/Object;)Ljava/lang/Object;
+                    invoke-static/range { p0 .. p0 }, $EXTENSION_CLASS_DESCRIPTOR->getNoWatermarkDownloadAddr(Ljava/lang/Object;)Ljava/lang/Object;
                     move-result-object v0
                     if-eqz v0, :use_original
                     return-object v0
@@ -69,7 +70,7 @@ val watermarkRemovalPatch = bytecodePatch(
             addInstructions(
                 0,
                 """
-                    invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->getNoWatermarkPlayAddr(Ljava/lang/Object;)Ljava/lang/Object;
+                    invoke-static/range { p0 .. p0 }, $EXTENSION_CLASS_DESCRIPTOR->getNoWatermarkPlayAddr(Ljava/lang/Object;)Ljava/lang/Object;
                     move-result-object v0
                     if-eqz v0, :use_original
                     return-object v0
@@ -114,7 +115,7 @@ val watermarkRemovalPatch = bytecodePatch(
             addInstructions(
                 0,
                 """
-                    invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->getCleanVideoUri(Ljava/lang/Object;)Ljava/lang/String;
+                    invoke-static/range { p0 .. p0 }, $EXTENSION_CLASS_DESCRIPTOR->getCleanVideoUri(Ljava/lang/Object;)Ljava/lang/String;
                     move-result-object v0
                     if-eqz v0, :use_original
                     return-object v0

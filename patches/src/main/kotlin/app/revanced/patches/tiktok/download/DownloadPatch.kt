@@ -47,11 +47,12 @@ val downloadPatch = bytecodePatch(
         }
 
         // Method 2: Hook download URL getter to return no-watermark URL
+        // Use /range because parameter registers may exceed v15
         getVideoUrlFingerprint.methodOrNull?.apply {
             addInstructionsWithLabels(
                 0,
                 """
-                    invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->getNoWatermarkUrl(Ljava/lang/Object;)Ljava/lang/String;
+                    invoke-static/range { p0 .. p0 }, $EXTENSION_CLASS_DESCRIPTOR->getNoWatermarkUrl(Ljava/lang/Object;)Ljava/lang/String;
                     move-result-object v0
                     if-eqz v0, :use_original
                     return-object v0
@@ -66,7 +67,7 @@ val downloadPatch = bytecodePatch(
             addInstructions(
                 0,
                 """
-                    invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->processDownloadUrl(Ljava/lang/String;)Ljava/lang/String;
+                    invoke-static/range { p1 .. p1 }, $EXTENSION_CLASS_DESCRIPTOR->processDownloadUrl(Ljava/lang/String;)Ljava/lang/String;
                     move-result-object p1
                 """
             )
@@ -77,7 +78,7 @@ val downloadPatch = bytecodePatch(
             addInstructions(
                 0,
                 """
-                    invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->onShareMenuOpened(Ljava/lang/Object;)V
+                    invoke-static/range { p0 .. p0 }, $EXTENSION_CLASS_DESCRIPTOR->onShareMenuOpened(Ljava/lang/Object;)V
                 """
             )
         }

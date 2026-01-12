@@ -80,10 +80,11 @@ val settingsPatch = bytecodePatch(
 
             // Use p0 (this) for the activity reference and v0 for the result
             // v0 is always safe to use as a temporary register
+            // Use invoke-static/range because p0 may map to v23+ which exceeds invoke-static's v0-v15 limit
             addInstructionsWithLabels(
                 initializeSettingsIndex,
                 """
-                    invoke-static { p0 }, $initializeSettingsMethodDescriptor
+                    invoke-static/range { p0 .. p0 }, $initializeSettingsMethodDescriptor
                     move-result v0
                     if-eqz v0, :do_not_open
                     return-void

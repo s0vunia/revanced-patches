@@ -90,7 +90,7 @@ val tigrikBytecodePatch = bytecodePatch(
         // Patch all Hidden0 special_clinit methods for cloud control indices
         // Indices 53-54: KillAppReceiver
         // Indices 63-73: Banner system
-        hidden0ClassFingerprint.classDef.methods.forEach { method ->
+        hidden0ClassFingerprint.classDefOrNull?.methods?.forEach { method ->
             val methodName = method.name
             if (methodName.startsWith("special_clinit_")) {
                 // Extract index from method name (e.g., "special_clinit_53_20" -> 53)

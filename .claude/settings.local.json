@@ -11,7 +11,17 @@
       "Bash(grep:*)",
       "Bash(tree:*)",
       "Bash(go build:*)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(find \"C:/Users/s0vunia/Downloads/tiktok_43_smali/smali\"* -name \"*CertificatePinner*.smali\")",
+      "Bash(find \"C:/Users/s0vunia/Downloads/tiktok_43_smali/smali\"* -name \"*FollowFeedList*.smali\")",
+      "Bash(git add:*)",
+      "Bash(ls:*)",
+      "Bash(\"C:\\\\programs\\\\jadx\\\\bin\\\\jadx.bat\" --help)",
+      "Bash(\"C:\\\\programs\\\\jadx\\\\bin\\\\jadx.bat\":*)",
+      "Bash(apktool d:*)",
+      "Bash(unzip:*)",
+      "Bash(\"C:/programs/jadx/bin/jadx\":*)",
+      "Bash(git -C /c/Users/s0vunia/work/tiktok-revanced-patches status --short patches/src/main/kotlin/app/revanced/patches/tiktok/nativelib/)"
     ],
     "deny": [],
     "ask": []

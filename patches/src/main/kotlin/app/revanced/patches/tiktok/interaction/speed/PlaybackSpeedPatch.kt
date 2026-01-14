@@ -35,7 +35,7 @@ val playbackSpeedPatch = bytecodePatch(
 
         getSpeedMethod.apply {
             val injectIndex = implementation?.instructions?.indexOfFirst {
-                getReference<MethodReference>(it)?.returnType == "F"
+                it.getReference<MethodReference>()?.returnType == "F"
             }?.takeIf { it >= 0 }?.plus(2) ?: return@execute
 
             val register = getInstruction<Instruction11x>(injectIndex - 1).registerA

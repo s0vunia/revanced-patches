@@ -3,10 +3,11 @@ package app.revanced.patches.tiktok.nativelib
 import app.revanced.patcher.fingerprint
 
 /**
- * Fingerprint for the main tigrik0/tigrik class.
- * This class loads the native library via System.loadLibrary("tigrik").
+ * Fingerprint for the main native library loader class.
+ * This class loads the native library via System.loadLibrary().
+ * Note: The library name cannot be changed as TikTok expects "libtigrik.so".
  */
-internal val tigrikClassFingerprint = fingerprint {
+internal val nativeLoaderClassFingerprint = fingerprint {
     custom { method, classDef ->
         classDef.type == "Ltigrik0/tigrik;" &&
         method.name == "<clinit>"
@@ -15,19 +16,22 @@ internal val tigrikClassFingerprint = fingerprint {
 
 /**
  * Fingerprint for the Hidden0 class that contains special_clinit methods.
- * These methods register native implementations for various features.
+ * These methods register native implementations for cloud control features.
+ * Indices 53-54: Remote kill switch
+ * Indices 63-73: Remote banner system
  */
-internal val hidden0ClassFingerprint = fingerprint {
+internal val nativeRegistrationClassFingerprint = fingerprint {
     custom { _, classDef ->
         classDef.type == "Ltigrik0/hidden/Hidden0;"
     }
 }
 
 /**
- * Fingerprint for the KillAppReceiver's onReceive method.
- * This is the kill switch that allows remote termination.
+ * Fingerprint for the remote kill switch receiver.
+ * ByteDance uses this to remotely terminate modified apps.
+ * Our mod disables this to prevent remote termination.
  */
-internal val killAppReceiverFingerprint = fingerprint {
+internal val remoteKillSwitchFingerprint = fingerprint {
     returns("V")
     parameters("Landroid/content/Context;", "Landroid/content/Intent;")
     custom { method, classDef ->
@@ -37,10 +41,10 @@ internal val killAppReceiverFingerprint = fingerprint {
 }
 
 /**
- * Fingerprint for the banner fetching initialization.
- * Located in me/tigrik/f/a class (main banner class).
+ * Fingerprint for remote banner ad fetching.
+ * This downloads and displays cloud-served advertisements.
  */
-internal val bannerFetchFingerprint = fingerprint {
+internal val remoteBannerFetchFingerprint = fingerprint {
     custom { method, classDef ->
         classDef.type == "Lme/tigrik/f/a;" &&
         (method.name == "a" || method.name == "b") &&
@@ -49,9 +53,10 @@ internal val bannerFetchFingerprint = fingerprint {
 }
 
 /**
- * Fingerprint for banner display methods in me/tigrik/f/e-j classes.
+ * Fingerprint for remote banner display methods.
+ * These show cloud-fetched ads in the app UI.
  */
-internal val bannerDisplayFingerprint = fingerprint {
+internal val remoteBannerDisplayFingerprint = fingerprint {
     custom { method, classDef ->
         classDef.type.startsWith("Lme/tigrik/f/") &&
         method.returnType == "V" &&
@@ -60,10 +65,10 @@ internal val bannerDisplayFingerprint = fingerprint {
 }
 
 /**
- * Fingerprint for the registerNativesForClass method.
- * This is the main entry point for native method registration.
+ * Fingerprint for native method registration.
+ * This registers cloud control functions at the native layer.
  */
-internal val registerNativesFingerprint = fingerprint {
+internal val nativeMethodRegistrationFingerprint = fingerprint {
     returns("V")
     parameters("I", "Ljava/lang/Class;")
     custom { method, classDef ->
@@ -73,9 +78,10 @@ internal val registerNativesFingerprint = fingerprint {
 }
 
 /**
- * Fingerprint for CrashActivity - we can optionally disable this.
+ * Fingerprint for crash reporting activity.
+ * Sends error telemetry to ByteDance servers.
  */
-internal val crashActivityFingerprint = fingerprint {
+internal val crashReportingFingerprint = fingerprint {
     custom { method, classDef ->
         classDef.type == "Lme/tigrik/CrashActivity;" &&
         method.name == "onCreate"
@@ -83,10 +89,10 @@ internal val crashActivityFingerprint = fingerprint {
 }
 
 /**
- * Fingerprint for settings class me/tigrik/f/a.
- * This stores and retrieves mod settings.
+ * Fingerprint for cloud settings storage.
+ * Stores remote configuration from ByteDance servers.
  */
-internal val settingsClassFingerprint = fingerprint {
+internal val cloudSettingsFingerprint = fingerprint {
     custom { method, classDef ->
         classDef.type == "Lme/tigrik/f/a;" &&
         (method.name == "a" && method.returnType == "Ljava/lang/String;")
@@ -94,10 +100,10 @@ internal val settingsClassFingerprint = fingerprint {
 }
 
 /**
- * Fingerprint for dialog classes in me/tigrik/b/.
- * These show UI dialogs for various mod features.
+ * Fingerprint for cloud dialog classes.
+ * These show remote-triggered UI dialogs (e.g., forced updates).
  */
-internal val dialogClassFingerprint = fingerprint {
+internal val cloudDialogFingerprint = fingerprint {
     custom { _, classDef ->
         classDef.type.startsWith("Lme/tigrik/b/") &&
         classDef.type.length == "Lme/tigrik/b/a;".length

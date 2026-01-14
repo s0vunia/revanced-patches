@@ -5,28 +5,29 @@ import app.revanced.patcher.patch.resourcePatch
 import app.revanced.util.inputStreamFromBundledResource
 import java.io.File
 import java.io.FileOutputStream
-import java.nio.file.Files
 
 /**
  * Native Library Replacement Patch
  *
- * Replaces the original libtigrik.so with our custom TikMod implementation.
+ * Replaces the original native library with a custom ReVanced implementation.
  * This removes all cloud control features:
- * - Remote kill switch (KillAppReceiver)
- * - Cloud banner ads
- * - Remote configuration fetching
+ * - Remote kill switch (prevents remote app termination)
+ * - Cloud banner ads (removes server-pushed advertisements)
+ * - Remote configuration fetching (keeps settings local-only)
  *
- * While keeping useful features:
+ * While preserving useful features:
  * - Watermark removal
  * - Ad blocking
  * - Feed filtering
  * - Download features
- * - Local-only settings
+ * - Local settings storage
+ *
+ * Note: The library filename must remain unchanged as TikTok expects it.
  */
 @Suppress("unused")
 val nativeLibReplacementPatch = rawResourcePatch(
     name = "Native library replacement",
-    description = "Replaces libtigrik.so with TikMod (no cloud control, no kill switch, no remote banners).",
+    description = "Replaces native library with ReVanced version (no cloud control, no kill switch, no remote banners).",
 ) {
     compatibleWith(
         "com.ss.android.ugc.trill",
@@ -38,6 +39,7 @@ val nativeLibReplacementPatch = rawResourcePatch(
 
         for (arch in architectures) {
             // Get the native library from bundled resources
+            // Note: Filename must match what TikTok expects (libtigrik.so)
             val inputStream = inputStreamFromBundledResource("tiktok/nativelib/$arch", "libtigrik.so")
 
             if (inputStream != null) {
@@ -54,7 +56,7 @@ val nativeLibReplacementPatch = rawResourcePatch(
                     }
                 }
 
-                println("Replaced libtigrik.so for $arch")
+                println("Replaced native library for $arch")
             } else {
                 println("Warning: Native library not found for $arch - skipping")
             }
@@ -63,15 +65,16 @@ val nativeLibReplacementPatch = rawResourcePatch(
 }
 
 /**
- * Alternative patch that disables the original native library loading
- * and uses pure Java/Kotlin implementation instead.
+ * Alternative patch that disables the native library loading entirely.
+ * Uses pure Java/Kotlin implementation instead.
  *
- * This is useful if you don't want to deal with native compilation.
+ * Use this if you don't need native features or want simpler patching.
+ * Note: Some mod features won't work, but cloud control is removed.
  */
 @Suppress("unused")
 val disableNativeLibPatch = resourcePatch(
     name = "Disable native lib",
-    description = "Disables libtigrik.so loading (mod features won't work, but removes cloud control).",
+    description = "Disables native library loading (simpler but fewer features).",
 ) {
     compatibleWith(
         "com.ss.android.ugc.trill",
@@ -79,20 +82,18 @@ val disableNativeLibPatch = resourcePatch(
     )
 
     execute {
-        // This patch works by modifying the AndroidManifest to remove
-        // the tigrik receiver, effectively disabling cloud control
+        // Remove cloud control receivers from AndroidManifest
         document("AndroidManifest.xml").use { document ->
             val manifest = document.documentElement
 
-            // Find and remove KillAppReceiver
+            // Find and remove remote kill switch receiver
             val receivers = manifest.getElementsByTagName("receiver")
             for (i in 0 until receivers.length) {
                 val receiver = receivers.item(i)
                 val name = receiver.attributes.getNamedItem("android:name")?.nodeValue
-                if (name?.contains("KillAppReceiver") == true ||
-                    name?.contains("tigrik") == true) {
+                if (name?.contains("KillAppReceiver") == true) {
                     receiver.parentNode.removeChild(receiver)
-                    println("Removed receiver: $name")
+                    println("Removed cloud control receiver: $name")
                 }
             }
         }

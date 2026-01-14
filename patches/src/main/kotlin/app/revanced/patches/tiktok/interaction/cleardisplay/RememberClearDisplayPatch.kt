@@ -6,10 +6,14 @@ import app.revanced.patcher.extensions.InstructionExtensions.getInstruction
 import app.revanced.patcher.patch.bytecodePatch
 import app.revanced.patcher.util.smali.ExternalLabel
 import app.revanced.patches.tiktok.shared.onRenderFirstFrameFingerprint
-import app.revanced.util.indexOfFirstInstructionOrThrow
 import com.android.tools.smali.dexlib2.Opcode
 import com.android.tools.smali.dexlib2.iface.instruction.TwoRegisterInstruction
 
+/**
+ * Patch to remember clear display state between videos.
+ * Note: This patch may not work on TikTok 43.x due to class restructuring.
+ * The patch will gracefully skip if fingerprints don't match.
+ */
 @Suppress("unused")
 val rememberClearDisplayPatch = bytecodePatch(
     name = "Remember clear display",
@@ -21,14 +25,27 @@ val rememberClearDisplayPatch = bytecodePatch(
     )
 
     execute {
-        onClearDisplayEventFingerprint.method.let {
+        val clearDisplayMethod = onClearDisplayEventFingerprint.methodOrNull
+        val renderFrameMethod = onRenderFirstFrameFingerprint.methodOrNull
+
+        // Skip patch if fingerprints don't match (e.g., TikTok 43.x restructured these classes)
+        if (clearDisplayMethod == null || renderFrameMethod == null) {
+            return@execute
+        }
+
+        clearDisplayMethod.let {
             // region Hook the "Clear display" configuration save event to remember the state of clear display.
 
-            val isEnabledIndex = it.indexOfFirstInstructionOrThrow(Opcode.IGET_BOOLEAN) + 1
-            val isEnabledRegister = it.getInstruction<TwoRegisterInstruction>(isEnabledIndex - 1).registerA
+            val isEnabledIndex = it.implementation?.instructions?.indexOfFirst { instr ->
+                instr.opcode == Opcode.IGET_BOOLEAN
+            } ?: -1
+
+            if (isEnabledIndex < 0) return@execute
+
+            val isEnabledRegister = it.getInstruction<TwoRegisterInstruction>(isEnabledIndex).registerA
 
             it.addInstructions(
-                isEnabledIndex,
+                isEnabledIndex + 1,
                 "invoke-static { v$isEnabledRegister }, " +
                     "Lapp/revanced/extension/tiktok/cleardisplay/RememberClearDisplayPatch;->rememberClearDisplayState(Z)V",
             )
@@ -37,8 +54,8 @@ val rememberClearDisplayPatch = bytecodePatch(
 
             // region Override the "Clear display" configuration load event to load the state of clear display.
 
-            val clearDisplayEventClass = it.parameters[0].type
-            onRenderFirstFrameFingerprint.method.addInstructionsWithLabels(
+            val clearDisplayEventClass = it.parameters.firstOrNull()?.type ?: return@execute
+            renderFrameMethod.addInstructionsWithLabels(
                 0,
                 """
                     # Create a new clearDisplayEvent and post it to the EventBus (https://github.com/greenrobot/EventBus)
@@ -51,7 +68,7 @@ val rememberClearDisplayPatch = bytecodePatch(
 
                     # Name of the clear display type which is equivalent to the clear display type.
                     const-string v3, "long_press"
-                    
+
                      # The state of clear display.
                     invoke-static { }, Lapp/revanced/extension/tiktok/cleardisplay/RememberClearDisplayPatch;->getClearDisplayState()Z
                     move-result v4
@@ -61,7 +78,7 @@ val rememberClearDisplayPatch = bytecodePatch(
                     invoke-direct { v0, v1, v2, v3, v4 }, $clearDisplayEventClass-><init>(ILjava/lang/String;Ljava/lang/String;Z)V
                     invoke-virtual { v0 }, $clearDisplayEventClass->post()Lcom/ss/android/ugc/governance/eventbus/IEvent;
                     """,
-                ExternalLabel("clear_display_disabled", onRenderFirstFrameFingerprint.method.getInstruction(0)),
+                ExternalLabel("clear_display_disabled", renderFrameMethod.getInstruction(0)),
             )
 
             // endregion

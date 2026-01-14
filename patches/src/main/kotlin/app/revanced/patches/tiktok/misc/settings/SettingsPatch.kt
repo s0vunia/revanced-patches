@@ -14,9 +14,15 @@ import com.android.tools.smali.dexlib2.iface.reference.FieldReference
 private const val EXTENSION_CLASS_DESCRIPTOR =
     "Lapp/revanced/extension/tiktok/settings/TikTokActivityHook;"
 
+/**
+ * Legacy settings patch for TikTok versions < 42.x that use SettingNewVersionFragment.
+ * For TikTok 42.x+ use settingsComposePatch instead.
+ *
+ * This patch gracefully skips if the legacy settings classes are not found (TikTok 43.x removed them).
+ */
 val settingsPatch = bytecodePatch(
-    name = "Settings",
-    description = "Adds ReVanced settings to TikTok.",
+    name = "Settings (Legacy)",
+    description = "Adds ReVanced settings to TikTok (legacy UI for versions < 42.x).",
 ) {
     dependsOn(sharedExtensionPatch, addBrandLicensePatch)
 
@@ -39,41 +45,53 @@ val settingsPatch = bytecodePatch(
 
         fun String.toClassName(): String = substring(1, this.length - 1).replace("/", ".")
 
-        // Find the class name of classes which construct a settings entry
-        val settingsButtonClass = settingsEntryFingerprint.originalClassDef.type.toClassName()
-        val settingsButtonInfoClass = settingsEntryInfoFingerprint.originalClassDef.type.toClassName()
+        // Legacy settings entry injection - only works on TikTok < 43.x
+        // TikTok 43.x removed SettingNewVersionFragment, so these fingerprints won't match
+        val settingsEntryClass = settingsEntryFingerprint.originalClassDefOrNull
+        val settingsEntryInfoClass = settingsEntryInfoFingerprint.originalClassDefOrNull
+        val addSettingsEntryMethod = addSettingsEntryFingerprint.methodOrNull
 
-        // Create a settings entry for 'revanced settings' and add it to settings fragment
-        addSettingsEntryFingerprint.method.apply {
-            val markIndex = implementation!!.instructions.indexOfFirst {
-                it.opcode == Opcode.IGET_OBJECT && ((it as Instruction22c).reference as FieldReference).name == "headerUnit"
+        if (settingsEntryClass != null && settingsEntryInfoClass != null && addSettingsEntryMethod != null) {
+            val settingsButtonClass = settingsEntryClass.type.toClassName()
+            val settingsButtonInfoClass = settingsEntryInfoClass.type.toClassName()
+
+            // Create a settings entry for 'revanced settings' and add it to settings fragment
+            addSettingsEntryMethod.apply {
+                val markIndex = implementation!!.instructions.indexOfFirst {
+                    it.opcode == Opcode.IGET_OBJECT && ((it as Instruction22c).reference as FieldReference).name == "headerUnit"
+                }
+
+                if (markIndex >= 0) {
+                    val getUnitManager = getInstruction(markIndex + 2)
+                    val addEntry = getInstruction(markIndex + 1)
+
+                    addInstructions(
+                        markIndex + 2,
+                        listOf(
+                            getUnitManager,
+                            addEntry,
+                        ),
+                    )
+
+                    addInstructions(
+                        markIndex + 2,
+                        """
+                            const-string v0, "$settingsButtonClass"
+                            const-string v1, "$settingsButtonInfoClass"
+                            invoke-static {v0, v1}, $createSettingsEntryMethodDescriptor
+                            move-result-object v0
+                            check-cast v0, ${settingsEntryClass.type}
+                        """,
+                    )
+                }
             }
-
-            val getUnitManager = getInstruction(markIndex + 2)
-            val addEntry = getInstruction(markIndex + 1)
-
-            addInstructions(
-                markIndex + 2,
-                listOf(
-                    getUnitManager,
-                    addEntry,
-                ),
-            )
-
-            addInstructions(
-                markIndex + 2,
-                """
-                    const-string v0, "$settingsButtonClass"
-                    const-string v1, "$settingsButtonInfoClass"
-                    invoke-static {v0, v1}, $createSettingsEntryMethodDescriptor
-                    move-result-object v0
-                    check-cast v0, ${settingsEntryFingerprint.originalClassDef.type}
-                """,
-            )
         }
+        // If legacy fingerprints don't match, the patch simply skips this part.
+        // TikTok 42.x+ should use settingsComposePatch instead.
 
         // Initialize the settings menu once the replaced setting entry is clicked.
-        adPersonalizationActivityOnCreateFingerprint.method.apply {
+        // AdPersonalizationActivity exists in all TikTok versions, so this always works.
+        adPersonalizationActivityOnCreateFingerprint.methodOrNull?.apply {
             val initializeSettingsIndex = implementation!!.instructions.indexOfFirst {
                 it.opcode == Opcode.INVOKE_SUPER
             } + 1

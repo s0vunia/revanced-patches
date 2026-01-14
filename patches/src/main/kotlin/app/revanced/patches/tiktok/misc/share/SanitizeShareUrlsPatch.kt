@@ -31,7 +31,8 @@ val sanitizeShareUrlsPatch = bytecodePatch(
     )
 
     execute {
-        urlShorteningFingerprint.method.apply {
+        val method = urlShorteningFingerprint.methodOrNull ?: return@execute
+        method.apply {
             val invokeIndex = indexOfFirstInstructionOrThrow {
                 val ref = getReference<MethodReference>()
                 ref?.name == "LIZ" && ref.definingClass.startsWith("LX/")

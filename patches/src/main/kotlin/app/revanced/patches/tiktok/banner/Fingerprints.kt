@@ -3,27 +3,29 @@ package app.revanced.patches.tiktok.banner
 import app.revanced.patcher.fingerprint
 
 /**
- * Fingerprint for TikTok's MainActivity.onCreate() method.
- * This is the main entry point where we inject the banner display call.
+ * Fingerprint for TikTok's AwemeHostApplication.onCreate() method.
+ *
+ * NOTE: MainActivity.onCreate() is NATIVE in TikTok 43.x, so we can't inject there.
+ * Using AwemeHostApplication.onCreate() which is the Application class.
  */
-internal val mainActivityOnCreateFingerprint = fingerprint {
+internal val awemeHostApplicationOnCreateFingerprint = fingerprint {
     returns("V")
-    parameters("Landroid/os/Bundle;")
+    parameters()
     custom { method, classDef ->
-        classDef.type == "Lcom/ss/android/ugc/aweme/main/MainActivity;" &&
+        classDef.type == "Lcom/ss/android/ugc/aweme/app/host/AwemeHostApplication;" &&
         method.name == "onCreate"
     }
 }
 
 /**
- * Alternative fingerprint for TikTok Lite's MainActivity.
+ * Alternative fingerprint - JatoInitTask.run() which has Context parameter.
+ * Called during app startup.
  */
-internal val mainActivityLiteOnCreateFingerprint = fingerprint {
+internal val jatoInitTaskFingerprint = fingerprint {
     returns("V")
-    parameters("Landroid/os/Bundle;")
+    parameters("Landroid/content/Context;")
     custom { method, classDef ->
-        classDef.type.contains("MainActivity") &&
-        classDef.type.contains("aweme") &&
-        method.name == "onCreate"
+        classDef.type == "Lcom/ss/android/ugc/aweme/legoImp/task/JatoInitTask;" &&
+        method.name == "run"
     }
 }

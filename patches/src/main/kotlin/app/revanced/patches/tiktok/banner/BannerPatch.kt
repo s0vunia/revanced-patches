@@ -10,37 +10,22 @@ private const val EXTENSION_CLASS_DESCRIPTOR =
 /**
  * Banner Patch - Shows custom announcements on app start.
  *
- * This patch hooks into MainActivity.onCreate() and calls BannerManager
- * to display announcements from user-configured remote config.
+ * NOTE: MainActivity.onCreate() is NATIVE in TikTok 43.x, so we hook
+ * JatoInitTask.run() instead, which runs during app startup and has Context.
  *
  * WHEN BANNER SHOWS:
- * 1. App starts (MainActivity.onCreate is called)
+ * 1. App starts (JatoInitTask.run is called with Context)
  * 2. Remote config is ENABLED in settings
- * 3. Config URL is set by user (e.g., https://yoursite.com/config.json)
- * 4. Config has announcement.enabled = true
- * 5. User has NOT dismissed this specific announcement (tracked by dismissKey)
+ * 3. Config URL is set by user
+ * 4. announcement.enabled = true in config
+ * 5. User hasn't dismissed this announcement
  *
  * WHEN BANNER DOES NOT SHOW:
- * - Remote config disabled (default state)
+ * - Remote config disabled (default)
  * - No config URL configured
- * - announcement.enabled = false in config
- * - User already clicked "OK" or "Don't show again"
- * - Network error and no cached config
- * - Banner already shown this session
- *
- * Example config.json:
- * {
- *   "announcement": {
- *     "enabled": true,
- *     "title": "Welcome!",
- *     "message": "Thanks for using TikTok ReVanced!",
- *     "url": "https://t.me/your_channel",
- *     "dismissKey": "welcome_v1"
- *   }
- * }
- *
- * To show a NEW banner after user dismissed, change the dismissKey
- * (e.g., "welcome_v2", "update_1.1", etc.)
+ * - announcement.enabled = false
+ * - Already dismissed by user
+ * - Network error and no cache
  */
 @Suppress("unused")
 val bannerPatch = bytecodePatch(
@@ -55,21 +40,29 @@ val bannerPatch = bytecodePatch(
     )
 
     execute {
-        // Hook MainActivity.onCreate() to show banner
-        val mainActivityMethod = mainActivityOnCreateFingerprint.methodOrNull
-            ?: mainActivityLiteOnCreateFingerprint.methodOrNull
-
-        mainActivityMethod?.apply {
-            // Inject at the end of onCreate (after super.onCreate and UI setup)
-            // We add at index 0 but with a delay in Java code, so it doesn't block UI
+        // Hook JatoInitTask.run(Context) - called during app startup
+        // This has Context parameter we need for showing dialogs later
+        jatoInitTaskFingerprint.methodOrNull?.apply {
             addInstructions(
-                implementation!!.instructions.size - 1,
+                0,
                 """
-                    # Call BannerManager.onMainActivityCreated(this)
-                    invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->onMainActivityCreated(Landroid/app/Activity;)V
+                    # Call BannerManager.onAppStarted(context)
+                    invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->onAppStarted(Landroid/content/Context;)V
                 """
             )
-            println("Banner patch: Hooked MainActivity.onCreate()")
-        } ?: println("Banner patch: MainActivity.onCreate() not found - banner will not show")
+            println("Banner patch: Hooked JatoInitTask.run()")
+        } ?: run {
+            // Fallback to AwemeHostApplication.onCreate()
+            awemeHostApplicationOnCreateFingerprint.methodOrNull?.apply {
+                addInstructions(
+                    0,
+                    """
+                        # Call BannerManager.onAppStarted(this) - Application is a Context
+                        invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->onAppStarted(Landroid/content/Context;)V
+                    """
+                )
+                println("Banner patch: Hooked AwemeHostApplication.onCreate()")
+            } ?: println("Banner patch: No suitable hook found - banner will not show")
+        }
     }
 }

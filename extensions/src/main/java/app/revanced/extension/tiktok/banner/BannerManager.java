@@ -2,8 +2,11 @@ package app.revanced.extension.tiktok.banner;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -15,7 +18,7 @@ import app.revanced.extension.tiktok.remoteconfig.RemoteConfigManager;
  * Banner Manager for displaying custom announcements.
  *
  * Shows banners based on remote config when:
- * 1. App starts (MainActivity.onCreate)
+ * 1. App starts and first Activity is resumed
  * 2. Remote config is enabled and has a config URL set
  * 3. Announcement is enabled in the config
  * 4. User hasn't dismissed this specific announcement (tracked by dismissKey)
@@ -31,28 +34,33 @@ public final class BannerManager {
     private static final String TAG = "TikTokBanner";
 
     // Delay before showing banner (let app UI settle first)
-    private static final long SHOW_DELAY_MS = 1500;
+    private static final long SHOW_DELAY_MS = 2000;
 
     // Prevent multiple banners from showing
     private static boolean bannerShown = false;
+    private static boolean initialized = false;
+    private static Context appContext = null;
 
     /**
-     * Called from MainActivity.onCreate() via bytecode patch.
-     * Shows banner if conditions are met.
+     * Called from JatoInitTask.run() or AwemeHostApplication.onCreate() via bytecode patch.
+     * Registers lifecycle callbacks to show banner when Activity is ready.
      */
-    public static void onMainActivityCreated(Activity activity) {
-        if (activity == null) {
-            Log.d(TAG, "Activity is null, skipping banner");
+    public static void onAppStarted(Context context) {
+        if (context == null) {
+            Log.d(TAG, "Context is null, skipping banner init");
             return;
         }
 
-        if (bannerShown) {
-            Log.d(TAG, "Banner already shown this session, skipping");
+        if (initialized) {
+            Log.d(TAG, "Already initialized, skipping");
             return;
         }
+        initialized = true;
 
-        // Initialize RemoteConfigManager if not already done
-        RemoteConfigManager.init(activity);
+        appContext = context.getApplicationContext();
+
+        // Initialize RemoteConfigManager
+        RemoteConfigManager.init(appContext);
 
         // Check if remote config is enabled
         if (!RemoteConfigManager.isEnabled()) {
@@ -60,10 +68,29 @@ public final class BannerManager {
             return;
         }
 
-        // Delay showing banner to let app UI settle
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            showBannerIfNeeded(activity);
-        }, SHOW_DELAY_MS);
+        Log.d(TAG, "Banner manager initialized, waiting for Activity...");
+
+        // Register lifecycle callbacks to detect when Activity is ready
+        if (appContext instanceof Application) {
+            ((Application) appContext).registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
+                @Override
+                public void onActivityResumed(Activity activity) {
+                    if (!bannerShown) {
+                        // Delay to let UI settle
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            showBannerIfNeeded(activity);
+                        }, SHOW_DELAY_MS);
+                    }
+                }
+
+                @Override public void onActivityCreated(Activity activity, Bundle savedInstanceState) {}
+                @Override public void onActivityStarted(Activity activity) {}
+                @Override public void onActivityPaused(Activity activity) {}
+                @Override public void onActivityStopped(Activity activity) {}
+                @Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) {}
+                @Override public void onActivityDestroyed(Activity activity) {}
+            });
+        }
     }
 
     /**

@@ -40,29 +40,13 @@ val bannerPatch = bytecodePatch(
     )
 
     execute {
-        // Hook JatoInitTask.run(Context) - called during app startup
-        // This has Context parameter we need for showing dialogs later
-        jatoInitTaskFingerprint.methodOrNull?.apply {
+        // Hook AwemeHostApplication.onCreate() - Application class, always exists
+        awemeHostApplicationOnCreateFingerprint.methodOrNull?.apply {
             addInstructions(
                 0,
-                """
-                    # Call BannerManager.onAppStarted(context)
-                    invoke-static { p1 }, $EXTENSION_CLASS_DESCRIPTOR->onAppStarted(Landroid/content/Context;)V
-                """
+                "invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->onAppStarted(Landroid/content/Context;)V"
             )
-            println("Banner patch: Hooked JatoInitTask.run()")
-        } ?: run {
-            // Fallback to AwemeHostApplication.onCreate()
-            awemeHostApplicationOnCreateFingerprint.methodOrNull?.apply {
-                addInstructions(
-                    0,
-                    """
-                        # Call BannerManager.onAppStarted(this) - Application is a Context
-                        invoke-static { p0 }, $EXTENSION_CLASS_DESCRIPTOR->onAppStarted(Landroid/content/Context;)V
-                    """
-                )
-                println("Banner patch: Hooked AwemeHostApplication.onCreate()")
-            } ?: println("Banner patch: No suitable hook found - banner will not show")
-        }
+            println("Banner patch: Hooked AwemeHostApplication.onCreate()")
+        } ?: println("Banner patch: AwemeHostApplication not found - banner will not show")
     }
 }

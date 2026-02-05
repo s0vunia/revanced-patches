@@ -39,16 +39,18 @@ import java.util.concurrent.Executors;
 /**
  * Banner Manager - Cloud Mode Style (tigrik-compatible)
  *
- * Config format (3 lines, plain text):
+ * Config format (4 lines, plain text):
  * Line 1: duration in seconds (re-show delay after dismiss)
  * Line 2: action URL (opened on image click)
  * Line 3: image URL (banner image)
+ * Line 4: banner key (changing this forces re-show even if dismissed)
  */
 public final class BannerManager {
     private static final String TAG = "TikTokBanner";
     private static final String PREFS_NAME = "tikmod_banner";
     private static final String KEY_DISMISS_TIME = "dismiss_time";
     private static final String KEY_DISMISS_DURATION = "dismiss_duration";
+    private static final String KEY_BANNER_KEY = "banner_key";
 
     private static final long SHOW_DELAY_MS = 3000;
     private static final int COUNTDOWN_SECONDS = 5;
@@ -95,7 +97,7 @@ public final class BannerManager {
 
                 Log.d(TAG, "Config: duration=" + config.duration + ", url=" + config.actionUrl);
 
-                if (isDismissed(config.duration)) {
+                if (isDismissed(config)) {
                     Log.d(TAG, "Banner still dismissed");
                     return;
                 }
@@ -108,13 +110,14 @@ public final class BannerManager {
     }
 
     /**
-     * Parse 3-line config: duration, actionUrl, imageUrl
+     * Parse 4-line config: duration, actionUrl, imageUrl, bannerKey
      */
     private static BannerConfig parseConfig(InputStream is) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
             String line1 = reader.readLine();
             String line2 = reader.readLine();
             String line3 = reader.readLine();
+            String line4 = reader.readLine();
 
             if (line1 == null || line2 == null || line3 == null) return null;
 
@@ -122,6 +125,7 @@ public final class BannerManager {
             config.duration = Long.parseLong(line1.trim());
             config.actionUrl = line2.trim();
             config.imageUrl = line3.trim();
+            config.bannerKey = (line4 != null) ? line4.trim() : "";
 
             if (config.imageUrl.isEmpty()) return null;
             return config;
@@ -255,7 +259,7 @@ public final class BannerManager {
             }.start();
 
             // Close button click - fade out and dismiss
-            closeButton.setOnClickListener(v -> dismissWithAnimation(dialog, container, config.duration));
+            closeButton.setOnClickListener(v -> dismissWithAnimation(dialog, container, config));
 
         } catch (Exception e) {
             Log.e(TAG, "Error showing banner", e);
@@ -265,7 +269,7 @@ public final class BannerManager {
     /**
      * Dismiss dialog with fade-out animation
      */
-    private static void dismissWithAnimation(AlertDialog dialog, View container, long duration) {
+    private static void dismissWithAnimation(AlertDialog dialog, View container, BannerConfig config) {
         try {
             AlphaAnimation fadeOut = new AlphaAnimation(1.0f, 0.0f);
             fadeOut.setDuration(300);
@@ -276,7 +280,7 @@ public final class BannerManager {
                 @Override
                 public void onAnimationEnd(Animation animation) {
                     try {
-                        markDismissed(duration);
+                        markDismissed(config);
                         dialog.dismiss();
                         currentDialog = null;
                     } catch (Exception e) {
@@ -290,7 +294,7 @@ public final class BannerManager {
             container.startAnimation(fadeOut);
         } catch (Exception e) {
             try {
-                markDismissed(duration);
+                markDismissed(config);
                 dialog.dismiss();
             } catch (Exception ignored) {}
         }
@@ -323,10 +327,16 @@ public final class BannerManager {
         return null;
     }
 
-    private static boolean isDismissed(long durationSeconds) {
+    private static boolean isDismissed(BannerConfig config) {
         SharedPreferences prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String savedKey = prefs.getString(KEY_BANNER_KEY, "");
         long dismissTime = prefs.getLong(KEY_DISMISS_TIME, 0);
         long dismissDuration = prefs.getLong(KEY_DISMISS_DURATION, 0);
+
+        if (!config.bannerKey.isEmpty() && !config.bannerKey.equals(savedKey)) {
+            Log.d(TAG, "New banner key: " + config.bannerKey + " (was: " + savedKey + ")");
+            return false;
+        }
 
         if (dismissTime == 0) return false;
 
@@ -334,11 +344,12 @@ public final class BannerManager {
         return elapsed < dismissDuration;
     }
 
-    private static void markDismissed(long durationSeconds) {
+    private static void markDismissed(BannerConfig config) {
         SharedPreferences prefs = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         prefs.edit()
                 .putLong(KEY_DISMISS_TIME, System.currentTimeMillis())
-                .putLong(KEY_DISMISS_DURATION, durationSeconds)
+                .putLong(KEY_DISMISS_DURATION, config.duration)
+                .putString(KEY_BANNER_KEY, config.bannerKey)
                 .apply();
     }
 
@@ -350,5 +361,6 @@ public final class BannerManager {
         long duration;
         String actionUrl;
         String imageUrl;
+        String bannerKey;
     }
 }
